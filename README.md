@@ -6,7 +6,7 @@ The vehicle is split into independently reusable parts:
 
 - a **frame** and a **front axle module**, allowing a downstream robot description to parameterize the wheelbase;
 - separate **rear and front bumpers**, including their mounts, so either can be replaced or omitted;
-- **Traxxas 6873T wheel-and-tyre models** in left (`_L`) and right (`_R`) versions;
+- **custom wheel-and-tyre models** with the general dimensions and characteristics of a Traxxas Slash wheel, in left (`_L`) and right (`_R`) versions;
 - a **center-of-mass marker**, represented by a separate checkerboard sphere whose placement can be parameterized.
 
 A linked **car assembly** places these parts together for rendering; it is not exported as a monolithic vehicle mesh. The exports are intended for use in downstream robot descriptions and simulators, including ROS 2 workflows. This repository does **not** contain a URDF, a ROS 2 package or a vehicle dynamics model. The center-of-mass sphere is a visual marker, not a mass or inertia specification.
@@ -17,12 +17,14 @@ All models use metres, with +Z up.
 
 | Model | Source | Origin and axes | Contents |
 |---|---|---|---|
-| Wheel L / R | `blender/traxxas_6873T_wheel.blend` | Hub centre; wheel axis along X | Tyre (0.1095 m diameter, about 0.039 m wide) and rim with open spokes |
+| Wheel L / R | `blender/traxxas_6873T_wheel.blend` | Hub centre; wheel axis along X | Original tyre design (0.1095 m diameter, about 0.039 m wide) and rim with open spokes |
 | Frame | `blender/roboracer_frame.blend` | Rear axle centre, at wheel-centre height; x forward, y left | Chassis plate up to the cut, rear suspension and shocks, nerf bars; no rear bumper |
 | Front axle module | `blender/roboracer_front_axle.blend` | Front axle centre, at wheel-centre height; x forward, y left | Front bulkhead and gearbox, front plate section, front suspension and shocks; no front bumper or connecting skid ramp |
 | Rear bumper | `blender/roboracer_rear_bumper.blend` | Rearmost X extent, centreline, at frame-origin height; x forward, y left | Tubular rear bumper, triangulated supports, mounting blocks and fasteners |
 | Front bumper | `blender/roboracer_front_bumper.blend` | Frontmost X extent, centreline, at frame-origin height; x forward, y left | Rubber bumper, connecting skid ramp, mounting plate, blocks and fasteners |
 | Center-of-mass marker | `blender/roboracer_center_of_mass.blend` | Sphere centre; x forward, y left | 0.100 m diameter sphere with a metallic-red/translucent-light-gray checkerboard |
+
+The wheel and tyre are an original design, not a reproduction of the Traxxas 6873T or another specific commercial part. The `6873T` references in filenames and Blender identifiers are legacy names retained for compatibility, not product identifications.
 
 - The frame and front axle module meet at a cut 0.272 m ahead of the frame origin, which is 0.052 m behind the front axle origin. That puts the nominal **wheelbase at 0.324 m**.
 - Wheel centres sit at y = ±0.145 (**track 0.290 m**), 0.055 m above the ground.
@@ -109,4 +111,4 @@ Using Blender and other GPL-licensed tools does not by itself impose the GPL on 
 
 External tools and libraries retain their own licences. Apache-2.0 code is [compatible with GPLv3](https://www.apache.org/licenses/GPL-compatibility.html), but distributing Blender-dependent scripts or a combined application may require GPL compliance; this is separate from the licensing of the model assets.
 
-"Traxxas" and "Slash" are trademarks of Traxxas, L.P. The models are independent recreations, and the license grants no rights to those trademarks. See section 6 of the license.
+"Traxxas" and "Slash" are trademarks of Traxxas, L.P. The models are independent visual approximations, and the license grants no rights to those trademarks. See section 6 of the license.
