@@ -1,9 +1,10 @@
-"""Derive the wheel .dae files in dae/ from the exported .usdc files in usd/.
+"""Derive dae/<part>.dae from every usd/<part>.usdc.
 
 Collada export was removed in Blender 5.0, so this runs in Blender 4.2 LTS (tools/docker/blender42/Dockerfile).
-The .usdc files are themselves exported from the .blend by tools/export_usd.py, so the .blend
-stays the single source of truth. Normally run through tools/export_all.sh.
+The .usdc files are themselves exported from the source .blend files by tools/export_usd.py, so the
+.blend files stay the single source of truth. Normally run through tools/export_all.sh.
 """
+import glob
 import os
 
 import bpy
@@ -12,12 +13,11 @@ assert bpy.app.version[:2] == (4, 2), f"needs Blender 4.2 LTS, got {bpy.app.vers
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.makedirs(os.path.join(REPO_DIR, "dae"), exist_ok=True)
+sources = sorted(glob.glob(os.path.join(REPO_DIR, "usd", "*.usdc")))
+assert sources, "no usd/*.usdc; run tools/export_usd.py first"
 
-for side in ("L", "R"):
-    src = os.path.join(REPO_DIR, "usd", f"traxxas_6873T_wheel_{side}.usdc")
-    out = os.path.join(REPO_DIR, "dae", f"traxxas_6873T_wheel_{side}.dae")
-    assert os.path.exists(src), f"missing {src}; run tools/export_usd.py first"
-
+for src in sources:
+    out = os.path.join(REPO_DIR, "dae", os.path.basename(src)[:-len(".usdc")] + ".dae")
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
     scene.unit_settings.system = 'METRIC'

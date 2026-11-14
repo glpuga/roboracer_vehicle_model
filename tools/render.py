@@ -1,10 +1,10 @@
-"""Headless renderer for blender/traxxas_6873T_wheel.blend.
+"""Headless renderer for the scenes in blender/traxxas_6873T_wheel.blend and blender/roboracer_car.blend.
 
 Usage (from the repo root):
-  blender -b blender/traxxas_6873T_wheel.blend --python tools/render.py -- [options]
+  blender -b blender/<file>.blend --python tools/render.py -- [options]
 
 Options:
-  --scenes NAME [NAME ...]  Scenes to render (default: Scene Stack)
+  --scenes NAME [NAME ...]  Scenes to render (default: every scene listed in OUTPUT_NAMES)
   --out DIR                 Output directory (default: build/renders in the repo)
   --device DEV              auto | OPTIX | CUDA | HIP | ONEAPI | METAL | CPU (default: auto)
   --samples N               Override Cycles samples (default: keep the scene's value)
@@ -19,13 +19,17 @@ import time
 import bpy
 
 GPU_ORDER = ["OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"]
-OUTPUT_NAMES = {"Scene": "traxxas_6873T_render", "Stack": "traxxas_6873T_stack_render"}
+OUTPUT_NAMES = {
+    "Scene": "traxxas_6873T_render",  # traxxas_6873T_wheel.blend
+    "Stack": "traxxas_6873T_stack_render",  # traxxas_6873T_wheel.blend
+    "Car": "roboracer_car_render",  # roboracer_car.blend
+}
 
 
 def parse_args():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser(prog="render.py")
-    p.add_argument("--scenes", nargs="+", default=["Scene", "Stack"])
+    p.add_argument("--scenes", nargs="+", default=None)
     p.add_argument("--out", default=None)
     p.add_argument("--device", default="auto")
     p.add_argument("--samples", type=int, default=None)
@@ -94,7 +98,8 @@ def main():
     devices = candidate_devices(a.device.upper() if a.device != "auto" else "auto",
                                 allow_cpu=not a.no_cpu_fallback)
     summary = []
-    for name in a.scenes:
+    scenes = a.scenes or [n for n in OUTPUT_NAMES if n in bpy.data.scenes]
+    for name in scenes:
         scn = bpy.data.scenes.get(name)
         if scn is None:
             raise SystemExit(f"[render] unknown scene {name!r}; available: {[s.name for s in bpy.data.scenes]}")
