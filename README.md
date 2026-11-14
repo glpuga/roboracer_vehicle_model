@@ -12,7 +12,13 @@
 
 The rim has open spokes, with no back plate.
 
-![Wheel](renders/traxxas_6873T_render.png)
+## Gallery
+
+| Studio (`Scene`) | Stack (`Stack`) |
+|---|---|
+| [![Single wheel, studio render](renders/traxxas_6873T_render.png)](renders/traxxas_6873T_render.png) | [![Three stacked wheels plus one standing](renders/traxxas_6873T_stack_render.png)](renders/traxxas_6873T_stack_render.png) |
+
+Both images are rendered from `blender/traxxas_6873T_wheel.blend` with `tools/render.py`. See [AGENTS.md](AGENTS.md#rendering).
 
 ## Layout
 
