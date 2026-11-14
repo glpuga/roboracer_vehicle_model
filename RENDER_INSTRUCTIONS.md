@@ -12,6 +12,12 @@ Instructions for an agent (or a person) to re-render the two final images on a m
   - Blender's renderer (Cycles) supports these GPU types: OptiX or CUDA (NVIDIA), HIP (AMD), oneAPI (Intel), Metal (Apple).
   - The scenes are small (about 80k triangles per wheel), so any GPU with 2 GB or more of memory is enough.
 
+## Model
+
+- Units are millimetres, Z up, and the wheel axis is X. This applies to the `.blend`, `.usdc` and `.dae` files.
+- The tyre is 109.5 mm in diameter, matching the stock Traxxas Slash tyre. It is about 39 mm wide.
+- The rim has no back plate, so you can see through the spokes.
+
 ## Scenes in the file
 
 | Scene | Content | Camera | Resolution | Samples | Output file |
@@ -47,7 +53,7 @@ Both scenes already have their lighting, materials, depth of field and denoising
 
 4. **Check the results:**
    - `renders/traxxas_6873T_render.png` should be 1920×1280, and `renders/traxxas_6873T_stack_render.png` should be 2400×1600.
-   - Compare them with the reference images in this folder: [traxxas_6873T_render.png](traxxas_6873T_render.png) and [traxxas_6873T_stack_render.png](traxxas_6873T_stack_render.png). These were rendered on the CPU.
+   - Compare them with the reference images in this folder: [traxxas_6873T_render.png](traxxas_6873T_render.png) and [traxxas_6873T_stack_render.png](traxxas_6873T_stack_render.png). These were rendered with OptiX on an RTX 2060.
    - The GPU output should look the same: same framing and colours, with slightly different noise. The images should not be black, cropped, or missing a wheel.
 
 5. **Report back:**
@@ -74,18 +80,15 @@ The script never saves the `.blend` file; all overrides apply only to that run.
 
 ## Expected timings
 
-These were measured on the original machine with the CPU only (16 threads):
-
-| Scene | Time |
-|---|---|
-| `Scene` | about 80–90 s |
-| `Stack` | about 10 min |
-
-A recent GPU should be several times faster.
+| Scene | CPU only (16 threads) | OptiX, RTX 2060 |
+|---|---|---|
+| `Scene` | about 80–90 s | about 20 s |
+| `Stack` | about 10 min | about 46 s |
 
 ## Troubleshooting
 
 - **`Failed to load CUDA kernel … (Invalid kernel image)`:** the NVIDIA driver is too old for the GPU code that ships with this Blender build. This is what happened on the original machine (GTX 1660 SUPER). Update the driver, or use a Blender build that matches the installed driver.
+- **Blender crashes about 1 s after loading the file, and the crash log shows `libze_loader` / `zeInitDrivers`:** the Intel oneAPI (Level Zero) device probe crashed. Cycles runs this probe even when you pass `--device OPTIX`. To skip it, run Blender with `ONEAPI_DEVICE_SELECTOR='opencl:*'` set in the environment, e.g. `ONEAPI_DEVICE_SELECTOR='opencl:*' /path/to/blender -b …`. NVIDIA rendering is not affected.
 - **`OPTIX: no devices`, but CUDA works:** OptiX needs a newer driver or an RTX card. CUDA gives the same image, just more slowly. Nothing needs fixing.
 - **Only `CPU` in the summary:** no GPU backend worked. Rerun with `--no-cpu-fallback` to see each failure.
 - **The image looks different from the reference:** check that the Blender version is 5.2.x (`blender --version`). Don't open and re-save the `.blend` in another version.
