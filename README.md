@@ -1,11 +1,15 @@
-# Traxxas 6873T wheel and Roboracer car parts
+# Roboracer vehicle visual model
 
-Visual models for the Roboracer / F1TENTH 1/10-scale car model used with ROS 2:
+Modular visual assets for a Traxxas Slash-style, 1/10-scale Roboracer / F1TENTH vehicle. The repository provides editable **Blender sources**, derived **USD and Collada meshes**, and reference renders of the parts and assembled car.
 
-- the **Traxxas 6873T wheel** and tyre, sized like the stock Traxxas Slash tyre, in left (`_L`) and right (`_R`) versions;
-- the **car body**, split into a **frame** and a **front axle module** so that the URDF can set the wheelbase as a parameter;
-- independent **rear and front bumpers**, so the URDF can select either bumper separately;
-- a **car assembly**, used only for rendering, that links the parts and the wheels.
+The vehicle is split into independently reusable parts:
+
+- a **frame** and a **front axle module**, allowing a downstream robot description to parameterize the wheelbase;
+- separate **rear and front bumpers**, including their mounts, so either can be replaced or omitted;
+- **Traxxas 6873T wheel-and-tyre models** in left (`_L`) and right (`_R`) versions;
+- a **center-of-mass marker**, represented by a separate checkerboard sphere whose placement can be parameterized.
+
+A linked **car assembly** places these parts together for rendering; it is not exported as a monolithic vehicle mesh. The exports are intended for use in downstream robot descriptions and simulators, including ROS 2 workflows. This repository does **not** contain a URDF, a ROS 2 package or a vehicle dynamics model. The center-of-mass sphere is a visual marker, not a mass or inertia specification.
 
 All models use metres, with +Z up.
 
@@ -50,7 +54,7 @@ These are Blender renders of DAE's exported Lambert materials, not screenshots f
 
 | Folder | Contents |
 |---|---|
-| [`blender/`](blender/) | Wheel, frame, front axle, rear/front bumper and center-of-mass `.blend` files, **the sources of truth**. `roboracer_car.blend` is the assembly: it only links the other files and holds the car render scene. The wheel file also holds the two wheel render scenes. |
+| [`blender/`](blender/) | Wheel, frame, front axle, rear/front bumper and center-of-mass `.blend` files, **the sources of truth**. `roboracer_car.blend` links the parts and holds the car render scenes. The wheel file holds single-wheel and wheel-stack scenes, each with studio and checker variants. |
 | [`usd/`](usd/) | One `.usdc` per wheel side and per car part, exported from the `.blend` files. **Never edit these by hand.** |
 | [`dae/`](dae/) | The same models as Collada (e.g. for URDF, RViz or Gazebo), exported from the `.usdc` files. **Never edit these by hand.** |
 | [`renders/`](renders/) | Native Blender and exported-DAE reference images. |
