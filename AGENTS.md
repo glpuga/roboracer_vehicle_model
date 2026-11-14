@@ -125,7 +125,9 @@ There are three render setups, each in two versions: a studio backdrop, and a Mu
 **How the checker versions are built.** Each `*_Checker` scene reuses its studio scene's camera, lights and models (the same objects, linked into both scenes), so changing them updates both versions. Each version has its own floor and world:
 - The studio floor (`Ground` in `Scene`, the `Cyc` backdrop in `Stack`, `Ground_Studio` in the car) is replaced by a flat plane using the `Ground_Checker` material.
 - That material copies MuJoCo's default `groundplane` look: tiles in sRGB (0.2, 0.3, 0.4) and (0.1, 0.2, 0.3), with (0.8, 0.8, 0.8) edge lines. The tiles are 0.1 m, aligned with the model origin.
-- The `World_Checker` world is a plain dark background.
+- The camera sees a plain dark background. Lighting still comes from each setup's own sources:
+  - The wheel scenes get most of their light from the studio sky (`World` and `StackWorld`), so their checker worlds (`World_Checker_Scene` and `World_Checker_Stack`) reuse that sky for lighting and reflections, and switch to dark only for camera rays (Light Path → Is Camera Ray).
+  - The car scene is lit by its area lights, so `World_Checker` is just a dark background.
 
 By default `tools/render.py` renders every one of these scenes found in the file it is given.
 
