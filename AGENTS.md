@@ -129,6 +129,20 @@ The script never saves the `.blend`.
 
 ## Commits
 
-- **Message:** a short summary line in the imperative mood, then bullets explaining what changed and why.
+- **Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):** `<type>[optional scope][!]: <description>`.
+  - The description is lowercase and in the imperative mood, without a trailing full stop.
+  - Add a body with bullets explaining what changed and why.
+- **Types:**
+
+  | Type | Use for |
+  |---|---|
+  | `feat` | Changes to the model (a new part, or new geometry or material in the `.blend`) |
+  | `fix` | Model or tooling bugs |
+  | `refactor` | Restructuring with no visible change to the model |
+  | `docs` | Documentation only |
+  | `build` | Docker images and export tooling environments |
+  | `chore` | Housekeeping, e.g. `.gitignore` |
+
+- **Breaking changes:** mark them with `!` (e.g. `feat!:`) and add a `BREAKING CHANGE:` footer. A change is breaking if it affects people who use the exports, e.g. new units, a different axis convention, renamed prims or nodes, or moved file paths.
 - **Scope:** one logical change per commit, with the `.blend` and its exports committed together.
 - **AI-assisted commits:** add the trailer `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
