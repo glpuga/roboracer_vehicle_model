@@ -14,9 +14,8 @@ Instructions for an agent (or a person) to re-render the two final images on a m
 
 ## Model
 
-- Units are millimetres, Z up, and the wheel axis is X. This applies to the `.blend`, `.usdc` and `.dae` files.
-- The tyre is 109.5 mm in diameter, matching the stock Traxxas Slash tyre. It is about 39 mm wide.
-- The rim has no back plate, so you can see through the spokes.
+- Units are metres, Z up, and the wheel axis is X. The tyre is 0.1095 m in diameter (the stock Traxxas Slash size) and about 0.039 m wide. The rim has no back plate.
+- The `.blend` is the source of truth. The `.usdc` and `.dae` files are derived from it. See [README.md](README.md) for how to regenerate them.
 
 ## Scenes in the file
 
