@@ -97,58 +97,12 @@ See [AGENTS.md](AGENTS.md) for the full procedures and rules. They apply to both
 
 The parts were created in Blender with AI-assisted modelling using [MCP for Blender](https://github.com/ahujasid/mcp-for-blender). Scripted part extraction, export, validation and reference rendering use Blender's Python API and the tools in this repository. MCP for Blender is a modelling aid, not a requirement for regenerating the exports or renders.
 
-## External dependencies and licence review
-
-Reviewed on **2026-11-14** against the tracked scripts, installed Python distributions, Blender's bundled licence manifests, the export container's package copyright files and upstream licences. This covers the direct toolchain and declared Python dependencies, not a complete SBOM of Blender, Ubuntu, GPU drivers or an independently installed MCP server.
-
-### Script and authoring dependencies
-
-| Dependency | Use / reviewed version | Licence |
-|---|---|---|
-| [Blender](https://docs.blender.org/manual/en/latest/getting_started/about/license.html), including `bpy`, `mathutils` and `bpy_extras` | Modelling, USD export, rendering and tests: 5.3.x; Collada export only: 4.2.23 | **GPL-3.0-or-later**; bundled libraries have additional licences listed in Blender's `license/license.md` and `license/licenses.json` |
-| [CPython and standard library](https://docs.python.org/3/license.html) | Supplied by each Blender build; includes the XML parser and test runner | PSF-2.0 and the accompanying historical/component notices |
-| [NumPy](https://numpy.org/doc/stable/license.html) | Geometry conversion and tests; 2.3.4 in the reviewed Blender 5.3 build | BSD-3-Clause for NumPy; retain any binary-build dependency notices |
-| [PyCollada](https://github.com/pycollada/pycollada) | Actual DAE geometry/material reader; pinned to 0.9.3 | BSD-3-Clause, verified in the installed `COPYING` |
-| [python-dateutil](https://github.com/dateutil/dateutil/blob/master/LICENSE) | PyCollada dependency; pinned to 4.0.0 | BSD-3-Clause applies to all code according to its installed licence; also contains Apache-2.0 notices for eligible contributions |
-| [tzdata](https://github.com/python/tzdata/blob/master/LICENSE) | Declared dependency of python-dateutil 4.0.0; **missing from the reviewed installation**, see findings below | Apache-2.0 for the package; [IANA time-zone data](https://github.com/eggert/tz/blob/main/LICENSE) is public domain, subject to its listed exceptions |
-| [six](https://github.com/benjaminp/six) | Pinned to 1.17.0, although not used by the current reader dependency chain | MIT |
-| [pip](https://github.com/pypa/pip/blob/main/LICENSE.txt) | Optional Python dependency installation | MIT; its vendored components retain their own notices |
-| [Docker CLI](https://github.com/docker/cli/blob/master/LICENSE) / [Moby Engine](https://github.com/moby/moby) | Builds and runs the Collada exporter | Apache-2.0 for these projects; Docker Desktop is not required and has separate product terms |
-| Bash, grep, tar and basic utilities | Export wrapper and container build | GNU Bash/grep/tar and GNU coreutils: GPL-3.0-or-later. The reviewed host's `head`, `dirname`, `id` and `sha256sum` are [uutils coreutils](https://github.com/uutils/coreutils/blob/main/LICENSE), MIT; the container uses GNU utilities |
-| [Git](https://git-scm.com/about/free-and-open-source) | Contributor version-control workflow, not an export/render dependency | GPL-2.0-only overall, with additional component notices |
-| [MCP for Blender](https://github.com/ahujasid/mcp-for-blender/blob/main/LICENSE) | Optional AI-assisted authoring; not required by the repository scripts | MIT. Its reviewed upstream manifest also declares the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk/blob/main/LICENSE) (MIT) and [HTTPX](https://github.com/encode/httpx/blob/master/LICENSE.md) (BSD-3-Clause); the full resolved server environment is not pinned here |
-| GPU backends and drivers | Optional OptiX/CUDA/HIP/oneAPI/Metal acceleration; CPU rendering is supported | Vendor/component-specific terms; some are proprietary. They are not relicensed by this repository |
-
-`tools/requirements-render.txt` pins the extra reader packages; NumPy and Blender's Python modules come from Blender. PyCollada's optional `lxml` extras are not installed or required by this workflow.
-
-### Export-container packages
-
-The Dockerfile uses `ubuntu:24.04` and installs the packages below. Ubuntu itself has **no single covering licence**. These entries summarize the reviewed packages, not every transitive OS library. Package versions can change on rebuild because the apt packages and base-image digest are not pinned.
-
-| Explicit package(s) | Licence notes |
-|---|---|
-| `ca-certificates` | GPL-2.0-or-later for the packaging/tools; MPL-2.0 for Mozilla certificate data |
-| `curl` | curl licence (permissive); its package retains additional per-file notices |
-| `xz-utils` | Reviewed container version 5.4.5: public-domain core plus GPL-2.0-or-later helpers and LGPL-2.1-or-later components |
-| `libx11-6`, `libxi6`, `libxxf86vm1`, `libxfixes3`, `libxrender1`, `libxkbcommon0`, `libsm6`, `libice6` | MIT/X11-style permissive licences, with package-specific notices |
-| `libgl1`, `libegl1` | Primarily MIT, with Apache-2.0/BSD notices; source-package notices also cover GPL-licensed build/documentation files |
-| `libglu1-mesa` | SGI-B-2.0 for library code; its copyright file explicitly opts legacy SGI 1.1 files into version 2.0. Debian packaging has GPL-2.0-or-later notices |
-| `libgomp1` | GPL-3.0-or-later **with GCC Runtime Library Exception 3.1**; do not omit the exception when assessing linking obligations |
-
-APT/dpkg and other base-image tools also carry their own licences, including GPL licences. Inspect `/usr/share/doc/<package>/copyright` in the built image and Blender's bundled licence manifests before redistributing that image; this table is not a substitute for their notices or corresponding-source obligations.
-
-### GPL compatibility and findings
-
-- **This is not a GPL-free toolchain.** Blender is GPL, as are several command-line/container tools. Using a GPL program to create independent output does not automatically make that output GPL. Blender's [own documentation](https://docs.blender.org/manual/en/latest/getting_started/about/license.html) explicitly distinguishes the application from the artwork, so using Blender does not by itself require these models, exports or renders to be relicensed.
-- **Blender API scripts need separate care.** These scripts import Blender modules directly; they are not merely unrelated executables invoked by a shell. [Apache-2.0 is compatible with GPLv3 in one direction](https://www.apache.org/licenses/GPL-compatibility.html): Apache code can enter a GPLv3 combined work, but GPL code cannot simply be redistributed as Apache-only. The GPL status of Blender-dependent scripts, including separately distributed scripts, needs assessment before redistribution as an Apache-only product; not bundling Blender does not by itself settle this. A Blender-linked add-on or combined application must respect applicable GPL terms. This review does not certify such distribution as Apache-only.
-- No incompatible licence was identified among NumPy and the separately installed/declared reader packages; the Blender API caveat above still applies. MIT/BSD/PSF/Apache notices need to be retained when redistributing those dependencies. A package's permissive top-level licence does not replace the notices of its bundled components.
-- The repository tracks its own scripts/assets and a Docker recipe, not Blender binaries, the built container or installed reader packages. Redistributing those third-party components requires a separate complete licence/notice and source-availability check. External assets imported through MCP also need their own asset-licence review.
-- **Dependency-closure finding, not a licence conflict:** `pip check` reports that pinned python-dateutil 4.0.0 requires `tzdata`, which the current `--no-deps` installation instructions do not install. The rendering tests pass, but the declared Python dependency set is incomplete. `six` is also still pinned despite no longer being required by the current PyCollada/dateutil dependency chain. No dependency versions or installation instructions were changed as part of this review.
-
-This is a technical inventory and compatibility assessment, not legal advice or a redistribution compliance certificate. Recheck it when changing dependency versions or distribution methods.
-
 ## License
 
-The repository's original models, exports, renders, scripts and documentation are offered under the [Apache License, Version 2.0](LICENSE). External tools and libraries retain their own licences and obligations, as described above.
+The repository's original models, exports, renders, scripts and documentation are offered under the [Apache License, Version 2.0](LICENSE).
+
+Using Blender and other GPL-licensed tools does not by itself impose the GPL on our models, exports or renders: [Blender's licence applies to the application, not the artwork](https://docs.blender.org/manual/en/latest/getting_started/about/license.html). The additional Python reader packages use permissive licences compatible with this project.
+
+External tools and libraries retain their own licences. Apache-2.0 code is [compatible with GPLv3](https://www.apache.org/licenses/GPL-compatibility.html), but distributing Blender-dependent scripts or a combined application may require GPL compliance; this is separate from the licensing of the model assets.
 
 "Traxxas" and "Slash" are trademarks of Traxxas, L.P. The models are independent recreations, and the license grants no rights to those trademarks. See section 6 of the license.
