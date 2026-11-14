@@ -44,3 +44,9 @@ BLENDER=/path/to/blender-5.2.x/blender tools/export_all.sh
 ```
 
 See [AGENTS.md](AGENTS.md) for the full procedures and rules. They apply to both people and AI agents.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE). This covers the models, exports, renders, scripts and documentation in this repository.
+
+"Traxxas" and "Slash" are trademarks of Traxxas, L.P. The model is an independent recreation, and the license grants no rights to those trademarks. See section 6 of the license.
