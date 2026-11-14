@@ -25,15 +25,20 @@ All models use metres, with +Z up.
 
 ## Gallery
 
-Each render scene comes in two versions: a studio backdrop, and a MuJoCo-style checker floor with 0.1 m tiles that also works as a scale reference.
+Each view has a studio backdrop and a MuJoCo-style checker floor with 0.1 m tiles. Each also has a DAE counterpart: the same camera, lights, floor and world, but model geometry and materials read from the actual exported Collada files.
 
-| | Studio | MuJoCo-style checker |
-|---|---|---|
-| Car assembly | [![Assembled car, studio](renders/roboracer_car_render.png)](renders/roboracer_car_render.png) | [![Assembled car, checker floor](renders/roboracer_car_checker_render.png)](renders/roboracer_car_checker_render.png) |
-| Single wheel | [![Single wheel, studio](renders/traxxas_6873T_render.png)](renders/traxxas_6873T_render.png) | [![Single wheel, checker floor](renders/traxxas_6873T_checker_render.png)](renders/traxxas_6873T_checker_render.png) |
-| Wheel stack | [![Three stacked wheels plus one standing, studio](renders/traxxas_6873T_stack_render.png)](renders/traxxas_6873T_stack_render.png) | [![Three stacked wheels plus one standing, checker floor](renders/traxxas_6873T_stack_checker_render.png)](renders/traxxas_6873T_stack_checker_render.png) |
+| | Studio (.blend) | Checker (.blend) | Studio (DAE) | Checker (DAE) |
+|---|---|---|---|---|
+| Car assembly | [![Car, studio](renders/roboracer_car_render.png)](renders/roboracer_car_render.png) | [![Car, checker](renders/roboracer_car_checker_render.png)](renders/roboracer_car_checker_render.png) | [![DAE car, studio](renders/roboracer_car_render_dae.png)](renders/roboracer_car_render_dae.png) | [![DAE car, checker](renders/roboracer_car_checker_render_dae.png)](renders/roboracer_car_checker_render_dae.png) |
+| Single wheel | [![Wheel, studio](renders/traxxas_6873T_render.png)](renders/traxxas_6873T_render.png) | [![Wheel, checker](renders/traxxas_6873T_checker_render.png)](renders/traxxas_6873T_checker_render.png) | [![DAE wheel, studio](renders/traxxas_6873T_render_dae.png)](renders/traxxas_6873T_render_dae.png) | [![DAE wheel, checker](renders/traxxas_6873T_checker_render_dae.png)](renders/traxxas_6873T_checker_render_dae.png) |
+| Wheel stack | [![Wheel stack, studio](renders/traxxas_6873T_stack_render.png)](renders/traxxas_6873T_stack_render.png) | [![Wheel stack, checker](renders/traxxas_6873T_stack_checker_render.png)](renders/traxxas_6873T_stack_checker_render.png) | [![DAE wheel stack, studio](renders/traxxas_6873T_stack_render_dae.png)](renders/traxxas_6873T_stack_render_dae.png) | [![DAE wheel stack, checker](renders/traxxas_6873T_stack_checker_render_dae.png)](renders/traxxas_6873T_stack_checker_render_dae.png) |
+| Frame | [![Frame, studio](renders/roboracer_frame_render.png)](renders/roboracer_frame_render.png) | [![Frame, checker](renders/roboracer_frame_checker_render.png)](renders/roboracer_frame_checker_render.png) | [![DAE frame, studio](renders/roboracer_frame_render_dae.png)](renders/roboracer_frame_render_dae.png) | [![DAE frame, checker](renders/roboracer_frame_checker_render_dae.png)](renders/roboracer_frame_checker_render_dae.png) |
+| Front axle | [![Front axle, studio](renders/roboracer_front_axle_render.png)](renders/roboracer_front_axle_render.png) | [![Front axle, checker](renders/roboracer_front_axle_checker_render.png)](renders/roboracer_front_axle_checker_render.png) | [![DAE front axle, studio](renders/roboracer_front_axle_render_dae.png)](renders/roboracer_front_axle_render_dae.png) | [![DAE front axle, checker](renders/roboracer_front_axle_checker_render_dae.png)](renders/roboracer_front_axle_checker_render_dae.png) |
+| Center-of-mass marker | [![Marker, studio](renders/roboracer_center_of_mass_render.png)](renders/roboracer_center_of_mass_render.png) | [![Marker, checker](renders/roboracer_center_of_mass_checker_render.png)](renders/roboracer_center_of_mass_checker_render.png) | [![DAE marker, studio](renders/roboracer_center_of_mass_render_dae.png)](renders/roboracer_center_of_mass_render_dae.png) | [![DAE marker, checker](renders/roboracer_center_of_mass_checker_render_dae.png)](renders/roboracer_center_of_mass_checker_render_dae.png) |
 
-All images are rendered with `tools/render.py`, which renders both versions by default. See [AGENTS.md](AGENTS.md#rendering).
+`tools/render.py` renders both backgrounds by default; `--dae` switches the models to their exported counterparts and adds `_dae` to the filenames. Every part of the DAE car is converted, including all four wheels and the center-of-mass marker. The standalone part stages are created in memory; no `.blend` is saved.
+
+These are Blender renders of DAE's exported Lambert materials, not screenshots from Isaac Sim, RViz or Gazebo. Procedural shading and PBR metallic reflections are absent in DAE; transparency and lighting can still differ by viewer. See [AGENTS.md](AGENTS.md#rendering) for setup and commands.
 
 ## Layout
 
@@ -42,7 +47,7 @@ All images are rendered with `tools/render.py`, which renders both versions by d
 | [`blender/`](blender/) | `traxxas_6873T_wheel.blend`, `roboracer_frame.blend`, `roboracer_front_axle.blend` and `roboracer_center_of_mass.blend`, **the sources of truth**. `roboracer_car.blend` is the assembly: it only links the other files and holds the car render scene. The wheel file also holds the two wheel render scenes. |
 | [`usd/`](usd/) | One `.usdc` per wheel side and per car part, exported from the `.blend` files. **Never edit these by hand.** |
 | [`dae/`](dae/) | The same models as Collada (e.g. for URDF, RViz or Gazebo), exported from the `.usdc` files. **Never edit these by hand.** |
-| [`renders/`](renders/) | Reference images rendered from the `.blend` files. |
+| [`renders/`](renders/) | Native Blender and exported-DAE reference images. |
 | [`tools/`](tools/) | Python export and render scripts, the `export_all.sh` wrapper, and the Dockerfile in `tools/docker/`. |
 | `build/` | Scratch output, such as test renders. Ignored by git. |
 
@@ -66,6 +71,14 @@ BLENDER=/path/to/blender-5.3.x/blender tools/export_all.sh
 # Render the reference scenes into build/renders/
 /path/to/blender-5.3.x/blender -b blender/roboracer_car.blend --python tools/render.py
 /path/to/blender-5.3.x/blender -b blender/traxxas_6873T_wheel.blend --python tools/render.py
+
+# Standalone parts (also creates studio/checker views in memory)
+/path/to/blender-5.3.x/blender -b blender/roboracer_frame.blend --python tools/render.py
+/path/to/blender-5.3.x/blender -b blender/roboracer_front_axle.blend --python tools/render.py
+/path/to/blender-5.3.x/blender -b blender/roboracer_center_of_mass.blend --python tools/render.py
+
+# DAE counterparts; install the optional reader first (see AGENTS.md)
+/path/to/blender-5.3.x/blender -b blender/roboracer_car.blend --python tools/render.py -- --dae
 ```
 
 See [AGENTS.md](AGENTS.md) for the full procedures and rules. They apply to both people and AI agents.

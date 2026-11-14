@@ -40,6 +40,7 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
 |---|---|---|
 | Blender 5.3.x | Editing, USD export, rendering | Official builds: <https://download.blender.org/release/Blender5.3/>. On Linux you can unpack the tarball and run `./blender`; no install needed. |
 | Docker | `.dae` export | `tools/export_all.sh` builds the image `traxxas-blender42:4.2.23` from `tools/docker/blender42/Dockerfile` on first use. |
+| PyCollada | DAE comparison renders | Optional; install `tools/requirements-render.txt` using Blender's bundled Python, as described below. |
 | Git | Version control | Commit identity: `glpuga`. |
 
 Blender 4.2 is only needed for the Collada export, and the Docker image provides it. Don't install it or use it for anything else.
@@ -118,7 +119,7 @@ Light-gray marker squares are 25% opaque, non-metallic and non-refractive (IOR 1
 
 ## Rendering
 
-There are three render setups, each in two versions: a studio backdrop, and a MuJoCo-style checker floor. Their lighting, materials and denoising are already set up.
+There are six render setups, each with a studio backdrop and a MuJoCo-style checker floor, plus DAE counterparts using the same stage. The wheel and car stages are saved in their source files. Standalone frame, front-axle and marker stages are created in memory using fitted copies of the car's camera and lights, and its linked floors and worlds; no source is saved.
 
 | File | Scene | Content | Camera | Resolution | Samples | Output file |
 |---|---|---|---|---|---|---|
@@ -128,6 +129,9 @@ There are three render setups, each in two versions: a studio backdrop, and a Mu
 | `traxxas_6873T_wheel.blend` | `Stack_Checker` | Same, on the checker floor | `StackCam` | 2400×1600 | 256 | `traxxas_6873T_stack_checker_render.png` |
 | `roboracer_car.blend` | `Car` | Assembled car | `Camera` | 1600×1000 | 128 | `roboracer_car_render.png` |
 | `roboracer_car.blend` | `Car_Checker` | Same, on the checker floor | `Camera` | 1600×1000 | 128 | `roboracer_car_checker_render.png` |
+| `roboracer_frame.blend` | `Frame`, `Frame_Checker` | Frame alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_frame_render.png`, `roboracer_frame_checker_render.png` |
+| `roboracer_front_axle.blend` | `Front_Axle`, `Front_Axle_Checker` | Front axle alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_front_axle_render.png`, `roboracer_front_axle_checker_render.png` |
+| `roboracer_center_of_mass.blend` | `COM_Marker`, `COM_Marker_Checker` | Marker alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_center_of_mass_render.png`, `roboracer_center_of_mass_checker_render.png` |
 
 **How the checker versions are built.** Each `*_Checker` scene reuses its studio scene's camera, lights and models (the same objects, linked into both scenes), so changing them updates both versions. Each version has its own floor and world:
 - The studio floor (`Ground` in `Scene`, the `Cyc` backdrop in `Stack`, `Ground_Studio` in the car) is replaced by a flat plane using the `Ground_Checker` material.
@@ -168,8 +172,35 @@ By default `tools/render.py` renders every one of these scenes found in the file
 | `--samples N` | the scene's own value | |
 | `--percent P` | `100` | Resolution percentage |
 | `--no-cpu-fallback` | off | Fail instead of falling back to the CPU |
+| `--dae` | off | Replace every model collection with its exported DAE geometry/materials; append `_dae` to output filenames |
 
 The script never saves the `.blend`.
+
+### DAE comparison renders
+
+Install the optional reader into the ignored build directory, using Blender's bundled Python. NumPy is already provided by Blender; `--no-deps` avoids replacing it:
+
+```bash
+/path/to/blender-5.3.x/5.3/python/bin/python3.13 -m pip install \
+    --no-deps --target build/render_deps -r tools/requirements-render.txt
+```
+
+After exporting any changed sources, add `--dae` to the normal rendering command:
+
+```bash
+/path/to/blender -b blender/roboracer_car.blend --python-exit-code 1 \
+    --python tools/render.py -- --dae --out build/renders
+```
+
+The same flag works for the wheel (all four views) and each standalone part (both backgrounds). `tools/render_models.py` reads the existing `dae/*.dae` files without modifying or re-exporting them. It preserves geometry, scene transforms, normals, UVs, per-face colors and opacity. Wheel-side collection exclusions and all assembly instance transforms are retained. For the car, the frame, front axle, marker and both wheel models are replaced: no source-model geometry or material remains visible.
+
+DAE previews use the exported Lambert materials, not the original procedural/PBR shaders. They are rendered in Blender, not the eventual consuming application, so viewer-specific transparency and lighting may differ. The render camera, lights, floor and world are not converted.
+
+Run the focused conversion/visibility/framing regression tests with:
+
+```bash
+/path/to/blender -b --python-exit-code 1 --python tools/test_render_models.py
+```
 
 **Expected timings:**
 

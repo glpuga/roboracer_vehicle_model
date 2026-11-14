@@ -1,0 +1,4 @@
+# NumPy is supplied by Blender. Install these with --no-deps.
+pycollada==0.9.3
+python-dateutil==4.0.0
+six==1.17.0

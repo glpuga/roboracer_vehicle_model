@@ -1,15 +1,16 @@
-"""Headless renderer for the scenes in blender/traxxas_6873T_wheel.blend and blender/roboracer_car.blend.
+"""Headless renderer for the wheel, car and standalone part source files.
 
 Usage (from the repo root):
   blender -b blender/<file>.blend --python tools/render.py -- [options]
 
 Options:
-  --scenes NAME [NAME ...]  Scenes to render (default: every scene listed in OUTPUT_NAMES)
+  --scenes NAME [NAME ...]  Scenes to render (default: all reference views for the source)
   --out DIR                 Output directory (default: build/renders in the repo)
   --device DEV              auto | OPTIX | CUDA | HIP | ONEAPI | METAL | CPU (default: auto)
   --samples N               Override Cycles samples (default: keep the scene's value)
   --percent P               Resolution percentage (default: 100)
   --no-cpu-fallback         Fail instead of falling back to CPU if no GPU backend works
+  --dae                     Render exported DAE geometry/materials instead of source models
 """
 import argparse
 import os
@@ -17,6 +18,9 @@ import sys
 import time
 
 import bpy
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from render_models import create_part_scenes, replace_models_with_dae
 
 GPU_ORDER = ["OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"]
 OUTPUT_NAMES = {
@@ -38,6 +42,7 @@ def parse_args():
     p.add_argument("--samples", type=int, default=None)
     p.add_argument("--percent", type=int, default=100)
     p.add_argument("--no-cpu-fallback", action="store_true")
+    p.add_argument("--dae", action="store_true")
     return p.parse_args(argv)
 
 
@@ -100,8 +105,12 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     devices = candidate_devices(a.device.upper() if a.device != "auto" else "auto",
                                 allow_cpu=not a.no_cpu_fallback)
+    part_outputs = create_part_scenes(repo_dir)
+    output_names = {**OUTPUT_NAMES, **part_outputs}
+    if a.dae:
+        replace_models_with_dae(repo_dir)
     summary = []
-    scenes = a.scenes or [n for n in OUTPUT_NAMES if n in bpy.data.scenes]
+    scenes = a.scenes or list(part_outputs) or [n for n in OUTPUT_NAMES if n in bpy.data.scenes]
     for name in scenes:
         scn = bpy.data.scenes.get(name)
         if scn is None:
@@ -111,7 +120,7 @@ def main():
         if a.samples:
             scn.cycles.samples = a.samples
         scn.render.image_settings.file_format = "PNG"
-        path = os.path.join(out_dir, OUTPUT_NAMES.get(name, name) + ".png")
+        path = os.path.join(out_dir, output_names.get(name, name) + ("_dae" if a.dae else "") + ".png")
         scn.render.filepath = path
         if os.path.exists(path):
             os.remove(path)
@@ -122,4 +131,5 @@ def main():
         print(f"[render]   {name}: {used} -> {path}")
 
 
-main()
+if __name__ == "__main__":
+    main()
