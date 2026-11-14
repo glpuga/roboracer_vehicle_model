@@ -18,6 +18,8 @@ EXPORTS = {
     "roboracer_frame.blend": [("Roboracer_Frame", "roboracer_frame")],
     "roboracer_front_axle.blend": [("Roboracer_Front_Axle", "roboracer_front_axle")],
     "roboracer_center_of_mass.blend": [("Roboracer_Center_Of_Mass", "roboracer_center_of_mass")],
+    "roboracer_rear_bumper.blend": [("Roboracer_Rear_Bumper", "roboracer_rear_bumper")],
+    "roboracer_front_bumper.blend": [("Roboracer_Front_Bumper", "roboracer_front_bumper")],
 }
 
 

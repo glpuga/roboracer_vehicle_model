@@ -6,6 +6,7 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
 
 1. **The source `.blend` files are the source of truth.**
    - `blender/traxxas_6873T_wheel.blend` (wheel), `blender/roboracer_frame.blend` (frame), `blender/roboracer_front_axle.blend` (front axle module) and `blender/roboracer_center_of_mass.blend` (center-of-mass marker).
+   - `blender/roboracer_rear_bumper.blend` and `blender/roboracer_front_bumper.blend` are the independent bumpers, including their mounts and fasteners.
    - All modelling and material changes go into these files.
    - Open and save them only with **Blender 5.3.x**. Saving with another version may change how they open or render.
 2. **The car assembly is only a render.**
@@ -23,6 +24,8 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
    - Wheel: origin at the hub centre, wheel axis along X.
    - Frame: origin at the rear axle centre, at wheel-centre height; x forward, y left.
    - Front axle module: origin at the front axle centre, at wheel-centre height; x forward, y left.
+   - Rear bumper: origin at its rearmost X extent, y = 0, at frame-origin height; x forward, y left. Place at (-0.1348, 0, 0) m relative to the frame.
+   - Front bumper: origin at its frontmost X extent, y = 0, at frame-origin height; x forward, y left. Place at (0.1671, 0, 0) m relative to the front axle. Its assembly instance is parented to `Car_Front_Axle` so it follows wheelbase changes; the rear instance is parented to `Car_Frame`.
    - Center-of-mass marker: origin at the sphere centre; x forward, y left. The assembly places it at (0.15532, 0, 0.01434) m relative to the rear-wheel midpoint.
    - Each car part file has one collection with a root empty of the same name at the origin (`Roboracer_Frame`, `Roboracer_Front_Axle`), and every object is parented to that root.
    - Changing an origin, an axis or the cut position is a breaking change for the URDF.
@@ -65,7 +68,7 @@ Blender 4.2 is only needed for the Collada export, and the Docker image provides
 
 ## Editing a car part
 
-1. **Open the part file** (`blender/roboracer_frame.blend`, `blender/roboracer_front_axle.blend` or `blender/roboracer_center_of_mass.blend`) in Blender 5.3.x.
+1. **Open the part file** (`blender/roboracer_frame.blend`, `blender/roboracer_front_axle.blend`, either `blender/roboracer_*_bumper.blend` or `blender/roboracer_center_of_mass.blend`) in Blender 5.3.x.
 2. **Edit the objects under the root empty.** Keep every object parented to the root, and leave the root at the origin with no rotation or scale.
 3. **Keep real-world sizes in metres**, as for the wheel.
 4. **Save**, then **regenerate the exports** (see [Exporting](#exporting-usd-and-dae)).
@@ -75,6 +78,7 @@ Blender 4.2 is only needed for the Collada export, and the Docker image provides
 **Adding a new part:**
 - Create `blender/<part>.blend` following ground rule 4.
 - Add it to `EXPORTS` in `tools/export_usd.py` and to `SOURCES` in `tools/export_all.sh`.
+- Add its collection to `MODELS` and its standalone views to `PARTS` in `tools/render_models.py`.
 - Link its collection into `roboracer_car.blend` (File → Link) and place an instance empty under `Roboracer_Car`.
 
 ## Exporting USD and DAE
@@ -93,6 +97,8 @@ The script runs two steps:
    | `roboracer_frame.blend` | `Roboracer_Frame` | `usd/roboracer_frame.usdc` |
    | `roboracer_front_axle.blend` | `Roboracer_Front_Axle` | `usd/roboracer_front_axle.usdc` |
    | `roboracer_center_of_mass.blend` | `Roboracer_Center_Of_Mass` | `usd/roboracer_center_of_mass.usdc` |
+   | `roboracer_rear_bumper.blend` | `Roboracer_Rear_Bumper` | `usd/roboracer_rear_bumper.usdc` |
+   | `roboracer_front_bumper.blend` | `Roboracer_Front_Bumper` | `usd/roboracer_front_bumper.usdc` |
 
    - Each root prim is named after its collection (e.g. `/Roboracer_Frame`), and `metersPerUnit` is 1.
    - Modifiers are applied, and materials are written as UsdPreviewSurface.
@@ -113,13 +119,15 @@ Light-gray marker squares are 25% opaque, non-metallic and non-refractive (IOR 1
 | Model | Meshes | Bounds |
 |---|---|---|
 | Wheel L / R | 33 | about 0.039 × 0.1095 × 0.1095 (X × Y × Z), centred on the hub |
-| Frame | 4 | (-0.135, -0.137, -0.008) → (0.272, 0.137, 0.092) |
-| Front axle module | 3 | (-0.052, -0.153, -0.008) → (0.167, 0.153, 0.070) |
+| Frame (no rear bumper) | 3 | (-0.074, -0.137, -0.008) → (0.272, 0.137, 0.070) |
+| Front axle module (no front bumper or connecting ramp) | 2 | (-0.052, -0.127, -0.008) → (0.033, 0.127, 0.070) |
+| Rear bumper | 1 | (0, -0.09374, 0.011) → (0.1078, 0.09374, 0.08702) |
+| Front bumper (including connecting ramp and fasteners) | 2 | (-0.1591, -0.1534, -0.008) → (0, 0.1534, 0.03818) |
 | Center-of-mass marker | 1 | (-0.050, -0.050, -0.050) → (0.050, 0.050, 0.050) |
 
 ## Rendering
 
-There are six render setups, each with a studio backdrop and a MuJoCo-style checker floor, plus DAE counterparts using the same stage. The wheel and car stages are saved in their source files. Standalone frame, front-axle and marker stages are created in memory using fitted copies of the car's camera and lights, and its linked floors and worlds; no source is saved.
+There are eight render setups, each with a studio backdrop and a MuJoCo-style checker floor, plus DAE counterparts using the same stage. The wheel and car stages are saved in their source files. Standalone frame, front-axle, bumper and marker stages are created in memory using fitted copies of the car's camera and lights, and its linked floors and worlds; no source is saved.
 
 | File | Scene | Content | Camera | Resolution | Samples | Output file |
 |---|---|---|---|---|---|---|
@@ -132,6 +140,8 @@ There are six render setups, each with a studio backdrop and a MuJoCo-style chec
 | `roboracer_frame.blend` | `Frame`, `Frame_Checker` | Frame alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_frame_render.png`, `roboracer_frame_checker_render.png` |
 | `roboracer_front_axle.blend` | `Front_Axle`, `Front_Axle_Checker` | Front axle alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_front_axle_render.png`, `roboracer_front_axle_checker_render.png` |
 | `roboracer_center_of_mass.blend` | `COM_Marker`, `COM_Marker_Checker` | Marker alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_center_of_mass_render.png`, `roboracer_center_of_mass_checker_render.png` |
+| `roboracer_rear_bumper.blend` | `Rear_Bumper`, `Rear_Bumper_Checker` | Rear bumper alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_rear_bumper_render.png`, `roboracer_rear_bumper_checker_render.png` |
+| `roboracer_front_bumper.blend` | `Front_Bumper`, `Front_Bumper_Checker` | Front bumper alone, studio/checker | Temporary stage camera | 1600×1000 | 128 | `roboracer_front_bumper_render.png`, `roboracer_front_bumper_checker_render.png` |
 
 **How the checker versions are built.** Each `*_Checker` scene reuses its studio scene's camera, lights and models (the same objects, linked into both scenes), so changing them updates both versions. Each version has its own floor and world:
 - The studio floor (`Ground` in `Scene`, the `Cyc` backdrop in `Stack`, `Ground_Studio` in the car) is replaced by a flat plane using the `Ground_Checker` material.
@@ -192,7 +202,7 @@ After exporting any changed sources, add `--dae` to the normal rendering command
     --python tools/render.py -- --dae --out build/renders
 ```
 
-The same flag works for the wheel (all four views) and each standalone part (both backgrounds). `tools/render_models.py` reads the existing `dae/*.dae` files without modifying or re-exporting them. It preserves geometry, scene transforms, normals, UVs, per-face colors and opacity. Wheel-side collection exclusions and all assembly instance transforms are retained. For the car, the frame, front axle, marker and both wheel models are replaced: no source-model geometry or material remains visible.
+The same flag works for the wheel (all four views) and each standalone part (both backgrounds). `tools/render_models.py` reads the existing `dae/*.dae` files without modifying or re-exporting them. It preserves geometry, scene transforms, normals, UVs, per-face colors and opacity. Wheel-side collection exclusions and all assembly instance transforms are retained. For the car, the frame, front axle, rear/front bumpers, marker and both wheel models are replaced: no source-model geometry or material remains visible.
 
 DAE previews use the exported Lambert materials, not the original procedural/PBR shaders. They are rendered in Blender, not the eventual consuming application, so viewer-specific transparency and lighting may differ. The render camera, lights, floor and world are not converted.
 

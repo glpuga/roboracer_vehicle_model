@@ -12,11 +12,15 @@ MODELS = {
     "Roboracer_Frame": "roboracer_frame",
     "Roboracer_Front_Axle": "roboracer_front_axle",
     "Roboracer_Center_Of_Mass": "roboracer_center_of_mass",
+    "Roboracer_Rear_Bumper": "roboracer_rear_bumper",
+    "Roboracer_Front_Bumper": "roboracer_front_bumper",
 }
 PARTS = {
     "roboracer_frame": ("Roboracer_Frame", "Frame"),
     "roboracer_front_axle": ("Roboracer_Front_Axle", "Front_Axle"),
     "roboracer_center_of_mass": ("Roboracer_Center_Of_Mass", "COM_Marker"),
+    "roboracer_rear_bumper": ("Roboracer_Rear_Bumper", "Rear_Bumper"),
+    "roboracer_front_bumper": ("Roboracer_Front_Bumper", "Front_Bumper"),
 }
 LAYER_FLAGS = ("exclude", "holdout", "indirect_only", "hide_viewport")
 

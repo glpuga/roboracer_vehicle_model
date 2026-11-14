@@ -6,7 +6,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 BLENDER="${BLENDER:-blender}"
 IMAGE=traxxas-blender42:4.2.23
-SOURCES=(traxxas_6873T_wheel roboracer_frame roboracer_front_axle roboracer_center_of_mass)
+SOURCES=(traxxas_6873T_wheel roboracer_frame roboracer_front_axle roboracer_center_of_mass
+         roboracer_rear_bumper roboracer_front_bumper)
 
 "$BLENDER" --version | head -1 | grep -q '^Blender 5\.3\.' \
     || { echo "BLENDER must point to Blender 5.3.x (got: $("$BLENDER" --version | head -1))" >&2; exit 1; }

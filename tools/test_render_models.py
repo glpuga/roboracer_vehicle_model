@@ -6,6 +6,7 @@ import unittest
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
+from mathutils import Matrix
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -110,6 +111,53 @@ class RenderModelsTests(unittest.TestCase):
         layers = models.layer_collections(bpy.data.scenes["Scene"].view_layers[0].layer_collection)
         left = next(layer for layer in layers if layer.collection == replacements[sources[0]])
         self.assertTrue(left.exclude)
+
+    def test_bumpers_are_independent_and_follow_their_axles(self):
+        for side, donor in (("Rear", "frame"), ("Front", "front_axle")):
+            with self.subTest(side=side):
+                bpy.ops.wm.open_mainfile(filepath=str(
+                    REPO / "blender" / f"roboracer_{side.lower()}_bumper.blend"))
+                name = f"Roboracer_{side}_Bumper"
+                collection = bpy.data.collections[name]
+                root = bpy.data.objects[name]
+                self.assertIsNone(root.parent)
+                self.assertEqual(root.matrix_world, Matrix.Identity(4))
+                self.assertFalse(bpy.data.libraries)
+                meshes = [obj for obj in collection.objects if obj.type == "MESH"]
+                self.assertEqual(len(meshes), 1 if side == "Rear" else 2)
+                self.assertTrue(all(mesh.parent == root for mesh in meshes))
+                if side == "Front":
+                    self.assertIn("Front_Bumper_Mount", collection.objects)
+                low, high = models.model_bounds(collection)
+                self.assertAlmostEqual(low.x if side == "Rear" else high.x, 0.0, places=6)
+                self.assertAlmostEqual(low.y + high.y, 0.0, places=6)
+                if side == "Front":
+                    self.assertAlmostEqual(low.x, -0.1591, places=6)
+                bpy.ops.wm.open_mainfile(filepath=str(REPO / "blender" / f"roboracer_{donor}.blend"))
+                self.assertFalse(any("Bumper" in obj.name for obj in bpy.data.objects))
+                if side == "Front":
+                    _, high = models.model_bounds(bpy.data.collections["Roboracer_Front_Axle"])
+                    self.assertLess(high.x, 0.04)
+
+        bpy.ops.wm.open_mainfile(filepath=str(REPO / "blender/roboracer_car.blend"))
+        root = bpy.data.objects["Roboracer_Car"]
+        front = bpy.data.objects["Car_Front_Bumper"]
+        rear = bpy.data.objects["Car_Rear_Bumper"]
+        self.assertEqual(front.parent, bpy.data.objects["Car_Front_Axle"])
+        self.assertEqual(rear.parent, bpy.data.objects["Car_Frame"])
+        for instance in (front, rear):
+            self.assertIsNotNone(instance.instance_collection.library)
+            self.assertEqual(instance.instance_collection.library.filepath,
+                             f"//roboracer_{'front' if instance == front else 'rear'}_bumper.blend")
+        for wheelbase in (0.28, 0.324, 0.4):
+            root["wheelbase"] = wheelbase
+            root.update_tag()
+            bpy.context.scene.frame_set(bpy.context.scene.frame_current)
+            self.assertAlmostEqual(front.matrix_world.translation.x, wheelbase + 0.1671, places=6)
+            self.assertAlmostEqual(rear.matrix_world.translation.x, -0.1348, places=6)
+            for instance in (front, rear):
+                self.assertAlmostEqual(instance.matrix_world.translation.z,
+                                       root.matrix_world.translation.z, places=6)
 
     def test_standalone_parts_frame_both_versions_without_editing_sources(self):
         for stem in models.PARTS:
