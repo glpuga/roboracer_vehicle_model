@@ -1,0 +1,4 @@
+*.blend binary
+*.usdc binary
+*.png binary
+*.dae text eol=lf
