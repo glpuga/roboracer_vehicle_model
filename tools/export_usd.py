@@ -1,13 +1,14 @@
-"""Export the wheel USDC files from traxxas_6873T_wheel.blend (the source of truth).
+"""Export the wheel USDC files from blender/traxxas_6873T_wheel.blend (the source of truth) into usd/.
 
-Run with Blender 5.2.x from the repo folder:
-    blender -b traxxas_6873T_wheel.blend --python tools/export_usd.py
+Run with Blender 5.2.x from the repo root:
+    blender -b blender/traxxas_6873T_wheel.blend --python tools/export_usd.py
 """
 import os
 
 import bpy
 
-OUT_DIR = os.path.dirname(bpy.data.filepath)
+OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "usd")
+os.makedirs(OUT_DIR, exist_ok=True)
 
 scene = bpy.data.scenes["Scene"]
 assert scene.unit_settings.system == 'METRIC' and scene.unit_settings.scale_length == 1.0, \

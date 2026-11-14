@@ -1,5 +1,5 @@
 # Blender 4.2 LTS, the last release with the Collada (.dae) exporter.
-# Used only to derive the .dae files; see README.md.
+# Used only to derive the .dae files; see AGENTS.md.
 FROM ubuntu:24.04
 
 ARG BLENDER_VERSION=4.2.23

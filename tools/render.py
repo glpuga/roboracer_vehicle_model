@@ -1,11 +1,11 @@
-"""Headless renderer for traxxas_6873T_wheel.blend.
+"""Headless renderer for blender/traxxas_6873T_wheel.blend.
 
-Usage:
-  blender -b traxxas_6873T_wheel.blend --python render.py -- [options]
+Usage (from the repo root):
+  blender -b blender/traxxas_6873T_wheel.blend --python tools/render.py -- [options]
 
 Options:
   --scenes NAME [NAME ...]  Scenes to render (default: Scene Stack)
-  --out DIR                 Output directory (default: ./renders next to the .blend)
+  --out DIR                 Output directory (default: build/renders in the repo)
   --device DEV              auto | OPTIX | CUDA | HIP | ONEAPI | METAL | CPU (default: auto)
   --samples N               Override Cycles samples (default: keep the scene's value)
   --percent P               Resolution percentage (default: 100)
@@ -88,8 +88,8 @@ def render_scene(scn, path, devices):
 
 def main():
     a = parse_args()
-    blend_dir = os.path.dirname(bpy.data.filepath) or os.getcwd()
-    out_dir = os.path.abspath(a.out or os.path.join(blend_dir, "renders"))
+    repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out_dir = os.path.abspath(a.out or os.path.join(repo_dir, "build", "renders"))
     os.makedirs(out_dir, exist_ok=True)
     devices = candidate_devices(a.device.upper() if a.device != "auto" else "auto",
                                 allow_cpu=not a.no_cpu_fallback)

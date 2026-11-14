@@ -1,3 +1,2 @@
 *.blend1
-renders/
-renders_test/
+build/
