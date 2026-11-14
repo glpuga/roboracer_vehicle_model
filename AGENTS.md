@@ -105,7 +105,7 @@ The script runs two steps:
 
 The center-of-mass marker uses two face-assigned materials so its checkerboard survives USD/DAE export without texture files. Preserve those assignments when editing the sphere.
 
-Light-gray marker squares are 50% opaque, non-metallic and non-refractive (IOR 1) to better match DAE's diffuse transparency in USD/Omniverse; red squares remain fully opaque and metallic in Blender/USD. Keep the Principled Alpha and material display alpha consistent. `tools/export_usd.py` temporarily compensates for Blender 5.3 overwriting constant alpha with its transmission mapping; it restores the shader after export and never saves the source.
+Light-gray marker squares are 25% opaque, non-metallic and non-refractive (IOR 1) to better match DAE's diffuse transparency in USD/Omniverse; red squares remain fully opaque and metallic in Blender/USD. Keep the Principled Alpha and material display alpha consistent. `tools/export_usd.py` temporarily compensates for Blender 5.3 overwriting constant alpha with its transmission mapping; it restores the shader after export and never saves the source.
 
 **Check the result:** `git status` should show changes only in `usd/` and `dae/`. Expected sizes, measured over the mesh points (min → max, metres):
 
