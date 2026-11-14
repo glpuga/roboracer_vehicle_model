@@ -1,2 +1,3 @@
-*.blend1
+# Blender backups (.blend1, .blend2, ...); git keeps the history
+*.blend[0-9]*
 build/
