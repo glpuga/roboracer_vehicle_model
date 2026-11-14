@@ -22,11 +22,15 @@ All models use metres, with +Z up.
 
 ## Gallery
 
-| Car assembly (`Car`) | Studio (`Scene`) | Stack (`Stack`) |
-|---|---|---|
-| [![Assembled car](renders/roboracer_car_render.png)](renders/roboracer_car_render.png) | [![Single wheel, studio render](renders/traxxas_6873T_render.png)](renders/traxxas_6873T_render.png) | [![Three stacked wheels plus one standing](renders/traxxas_6873T_stack_render.png)](renders/traxxas_6873T_stack_render.png) |
+Each render scene comes in two versions: a studio backdrop, and a MuJoCo-style checker floor with 0.1 m tiles that also works as a scale reference.
 
-All images are rendered with `tools/render.py`. See [AGENTS.md](AGENTS.md#rendering).
+| | Studio | MuJoCo-style checker |
+|---|---|---|
+| Car assembly | [![Assembled car, studio](renders/roboracer_car_render.png)](renders/roboracer_car_render.png) | [![Assembled car, checker floor](renders/roboracer_car_checker_render.png)](renders/roboracer_car_checker_render.png) |
+| Single wheel | [![Single wheel, studio](renders/traxxas_6873T_render.png)](renders/traxxas_6873T_render.png) | [![Single wheel, checker floor](renders/traxxas_6873T_checker_render.png)](renders/traxxas_6873T_checker_render.png) |
+| Wheel stack | [![Three stacked wheels plus one standing, studio](renders/traxxas_6873T_stack_render.png)](renders/traxxas_6873T_stack_render.png) | [![Three stacked wheels plus one standing, checker floor](renders/traxxas_6873T_stack_checker_render.png)](renders/traxxas_6873T_stack_checker_render.png) |
+
+All images are rendered with `tools/render.py`, which renders both versions by default. See [AGENTS.md](AGENTS.md#rendering).
 
 ## Layout
 

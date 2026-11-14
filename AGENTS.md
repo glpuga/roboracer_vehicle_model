@@ -13,7 +13,7 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
    - Never use "Make Local" or append parts into it. The only local data allowed are:
      - the root empty `Roboracer_Car` and its drivers;
      - the instance empties `Car_*`;
-     - the render stage (`Render_Stage`: ground, camera, lights, world).
+     - the render stage: `Render_Stage` (camera and lights, shared by both scenes), `Ground_Studio` and `Ground_Checker` (one floor per scene), and the worlds.
    - To change how the car looks, edit the source file. The assembly picks up the change automatically.
 3. **Never edit `usd/*.usdc` or `dae/*.dae` directly.**
    - Don't edit them by hand, with scripts, or by importing them into another tool and exporting again.
@@ -111,13 +111,21 @@ The script runs two steps:
 
 ## Rendering
 
-There are three render scenes. Their lighting, materials and denoising are already set up.
+There are three render setups, each in two versions: a studio backdrop, and a MuJoCo-style checker floor. Their lighting, materials and denoising are already set up.
 
 | File | Scene | Content | Camera | Resolution | Samples | Output file |
 |---|---|---|---|---|---|---|
 | `traxxas_6873T_wheel.blend` | `Scene` | Single wheel in a studio set | `Camera` | 1920×1280 | 160 | `traxxas_6873T_render.png` |
+| `traxxas_6873T_wheel.blend` | `Scene_Checker` | Same, on the checker floor | `Camera` | 1920×1280 | 160 | `traxxas_6873T_checker_render.png` |
 | `traxxas_6873T_wheel.blend` | `Stack` | 3 wheels stacked plus 1 standing | `StackCam` | 2400×1600 | 256 | `traxxas_6873T_stack_render.png` |
+| `traxxas_6873T_wheel.blend` | `Stack_Checker` | Same, on the checker floor | `StackCam` | 2400×1600 | 256 | `traxxas_6873T_stack_checker_render.png` |
 | `roboracer_car.blend` | `Car` | Assembled car | `Camera` | 1600×1000 | 128 | `roboracer_car_render.png` |
+| `roboracer_car.blend` | `Car_Checker` | Same, on the checker floor | `Camera` | 1600×1000 | 128 | `roboracer_car_checker_render.png` |
+
+**How the checker versions are built.** Each `*_Checker` scene reuses its studio scene's camera, lights and models (the same objects, linked into both scenes), so changing them updates both versions. Each version has its own floor and world:
+- The studio floor (`Ground` in `Scene`, the `Cyc` backdrop in `Stack`, `Ground_Studio` in the car) is replaced by a flat plane using the `Ground_Checker` material.
+- That material copies MuJoCo's default `groundplane` look: tiles in sRGB (0.2, 0.3, 0.4) and (0.1, 0.2, 0.3), with (0.8, 0.8, 0.8) edge lines. The tiles are 0.1 m, aligned with the model origin.
+- The `World_Checker` world is a plain dark background.
 
 By default `tools/render.py` renders every one of these scenes found in the file it is given.
 
@@ -160,7 +168,10 @@ The script never saves the `.blend`.
 |---|---|---|
 | `Scene` | about 80–90 s | about 20 s |
 | `Stack` | about 10 min | about 46 s |
+| `Scene_Checker` | — | about 16 s |
+| `Stack_Checker` | — | about 29 s |
 | `Car` | — | about 12 s |
+| `Car_Checker` | — | about 12 s |
 
 ### Render troubleshooting
 

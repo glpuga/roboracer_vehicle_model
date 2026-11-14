@@ -22,7 +22,10 @@ GPU_ORDER = ["OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"]
 OUTPUT_NAMES = {
     "Scene": "traxxas_6873T_render",  # traxxas_6873T_wheel.blend
     "Stack": "traxxas_6873T_stack_render",  # traxxas_6873T_wheel.blend
+    "Scene_Checker": "traxxas_6873T_checker_render",  # traxxas_6873T_wheel.blend
+    "Stack_Checker": "traxxas_6873T_stack_checker_render",  # traxxas_6873T_wheel.blend
     "Car": "roboracer_car_render",  # roboracer_car.blend
+    "Car_Checker": "roboracer_car_checker_render",  # roboracer_car.blend
 }
 
 
