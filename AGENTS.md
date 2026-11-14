@@ -5,7 +5,7 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
 ## Ground rules
 
 1. **The source `.blend` files are the source of truth.**
-   - `blender/traxxas_6873T_wheel.blend` (wheel), `blender/roboracer_frame.blend` (frame) and `blender/roboracer_front_axle.blend` (front axle module).
+   - `blender/traxxas_6873T_wheel.blend` (wheel), `blender/roboracer_frame.blend` (frame), `blender/roboracer_front_axle.blend` (front axle module) and `blender/roboracer_center_of_mass.blend` (center-of-mass marker).
    - All modelling and material changes go into these files.
    - Open and save them only with **Blender 5.3.x**. Saving with another version may change how they open or render.
 2. **The car assembly is only a render.**
@@ -23,6 +23,7 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
    - Wheel: origin at the hub centre, wheel axis along X.
    - Frame: origin at the rear axle centre, at wheel-centre height; x forward, y left.
    - Front axle module: origin at the front axle centre, at wheel-centre height; x forward, y left.
+   - Center-of-mass marker: origin at the sphere centre; x forward, y left. The assembly places it at (0.15532, 0, 0.01434) m relative to the rear-wheel midpoint.
    - Each car part file has one collection with a root empty of the same name at the origin (`Roboracer_Frame`, `Roboracer_Front_Axle`), and every object is parented to that root.
    - Changing an origin, an axis or the cut position is a breaking change for the URDF.
 5. **A change to a source `.blend` and its regenerated exports go in the same commit.**
@@ -63,7 +64,7 @@ Blender 4.2 is only needed for the Collada export, and the Docker image provides
 
 ## Editing a car part
 
-1. **Open the part file** (`blender/roboracer_frame.blend` or `blender/roboracer_front_axle.blend`) in Blender 5.3.x.
+1. **Open the part file** (`blender/roboracer_frame.blend`, `blender/roboracer_front_axle.blend` or `blender/roboracer_center_of_mass.blend`) in Blender 5.3.x.
 2. **Edit the objects under the root empty.** Keep every object parented to the root, and leave the root at the origin with no rotation or scale.
 3. **Keep real-world sizes in metres**, as for the wheel.
 4. **Save**, then **regenerate the exports** (see [Exporting](#exporting-usd-and-dae)).
@@ -90,6 +91,7 @@ The script runs two steps:
    | `traxxas_6873T_wheel.blend` | `Traxxas_6873T_L`, `Traxxas_6873T_R` | `usd/traxxas_6873T_wheel_L.usdc`, `_R.usdc` |
    | `roboracer_frame.blend` | `Roboracer_Frame` | `usd/roboracer_frame.usdc` |
    | `roboracer_front_axle.blend` | `Roboracer_Front_Axle` | `usd/roboracer_front_axle.usdc` |
+   | `roboracer_center_of_mass.blend` | `Roboracer_Center_Of_Mass` | `usd/roboracer_center_of_mass.usdc` |
 
    - Each root prim is named after its collection (e.g. `/Roboracer_Frame`), and `metersPerUnit` is 1.
    - Modifiers are applied, and materials are written as UsdPreviewSurface.
@@ -101,6 +103,10 @@ The script runs two steps:
 
 **Materials in exports.** USD and DAE consumers only see the Principled BSDF *default* values, not procedural node graphs. When a node drives a material input, keep that input's default set to a sensible flat colour or roughness.
 
+The center-of-mass marker uses two face-assigned materials so its checkerboard survives USD/DAE export without texture files. Preserve those assignments when editing the sphere.
+
+Light-gray marker squares are 50% opaque, non-metallic and non-refractive (IOR 1) to better match DAE's diffuse transparency in USD/Omniverse; red squares remain fully opaque and metallic in Blender/USD. Keep the Principled Alpha and material display alpha consistent. `tools/export_usd.py` temporarily compensates for Blender 5.3 overwriting constant alpha with its transmission mapping; it restores the shader after export and never saves the source.
+
 **Check the result:** `git status` should show changes only in `usd/` and `dae/`. Expected sizes, measured over the mesh points (min → max, metres):
 
 | Model | Meshes | Bounds |
@@ -108,6 +114,7 @@ The script runs two steps:
 | Wheel L / R | 33 | about 0.039 × 0.1095 × 0.1095 (X × Y × Z), centred on the hub |
 | Frame | 4 | (-0.135, -0.137, -0.008) → (0.272, 0.137, 0.092) |
 | Front axle module | 3 | (-0.052, -0.153, -0.008) → (0.167, 0.153, 0.070) |
+| Center-of-mass marker | 1 | (-0.050, -0.050, -0.050) → (0.050, 0.050, 0.050) |
 
 ## Rendering
 

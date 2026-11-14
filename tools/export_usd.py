@@ -4,6 +4,7 @@ Run with Blender 5.3.x from the repo root, once per source file (tools/export_al
     blender -b blender/roboracer_frame.blend --python tools/export_usd.py
 """
 import os
+from contextlib import contextmanager
 
 import bpy
 
@@ -16,7 +17,32 @@ EXPORTS = {
                                   ("Traxxas_6873T_R", "traxxas_6873T_wheel_R")],
     "roboracer_frame.blend": [("Roboracer_Frame", "roboracer_frame")],
     "roboracer_front_axle.blend": [("Roboracer_Front_Axle", "roboracer_front_axle")],
+    "roboracer_center_of_mass.blend": [("Roboracer_Center_Of_Mass", "roboracer_center_of_mass")],
 }
+
+
+@contextmanager
+def preserve_constant_alpha():
+    changed = []
+    try:
+        for material in bpy.data.materials:
+            if not material.use_nodes:
+                continue
+            for node in material.node_tree.nodes:
+                if node.type != 'BSDF_PRINCIPLED':
+                    continue
+                alpha = node.inputs['Alpha']
+                transmission = node.inputs['Transmission Weight']
+                if (not alpha.is_linked and alpha.default_value < 1.0
+                        and not transmission.is_linked and transmission.default_value == 0.0):
+                    # Blender 5.3 overwrites USD opacity with 1 - Transmission Weight.
+                    # Compensate only during export; leave the source shader unchanged.
+                    changed.append((transmission, transmission.default_value))
+                    transmission.default_value = 1.0 - alpha.default_value
+        yield
+    finally:
+        for socket, value in changed:
+            socket.default_value = value
 
 
 def find_layer_collection(layer_coll, name):
@@ -44,7 +70,7 @@ for coll_name, out_name in EXPORTS[source]:
     # objects. This change is never saved.
     find_layer_collection(view_layer.layer_collection, coll_name).exclude = False
     out = os.path.join(OUT_DIR, f"{out_name}.usdc")
-    with bpy.context.temp_override(scene=scene, view_layer=view_layer):
+    with bpy.context.temp_override(scene=scene, view_layer=view_layer), preserve_constant_alpha():
         bpy.ops.wm.usd_export(
             filepath=out,
             collection=coll_name,
