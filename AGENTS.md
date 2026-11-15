@@ -19,7 +19,11 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
 3. **Never edit `usd/*.usdc` or `dae/*.dae` directly.**
    - Don't edit them by hand, with scripts, or by importing them into another tool and exporting again.
    - They are always regenerated from the source `.blend` files with `tools/export_all.sh` (see [Exporting](#exporting-usd-and-dae)).
-4. **Keep the units and frame conventions.**
+4. **Stay a data-only ROS 2 package.**
+   - `package.xml` and `CMakeLists.txt` make the repository root the `ament_cmake` package `roboracer_vehicle_model`, which installs `dae/` (and the licence and README) into `share/roboracer_vehicle_model/`.
+   - Don't add compiled targets, launch files or URDFs here, and don't list meshes one by one: the install rule covers every `dae/*.dae`, so new exports need no packaging change.
+   - The `dae/` folder name inside the share directory is part of the mesh URIs (`package://roboracer_vehicle_model/dae/...`); changing it is a breaking change.
+5. **Keep the units and frame conventions.**
    - Metres (scene unit scale 1.0) and Z up. `tools/export_usd.py` refuses to export otherwise.
    - Wheel: origin at the hub centre, wheel axis along X.
    - Frame: origin at the rear axle centre, at wheel-centre height; x forward, y left.
@@ -29,11 +33,11 @@ These procedures apply to anyone changing this repo, whether a person or an AI a
    - Center-of-mass marker: origin at the sphere centre; x forward, y left. The assembly places it at (0.15532, 0, 0.01434) m relative to the rear-wheel midpoint.
    - Each car part file has one collection with a root empty of the same name at the origin (`Roboracer_Frame`, `Roboracer_Front_Axle`), and every object is parented to that root.
    - Changing an origin, an axis or the cut position is a breaking change for the URDF.
-5. **A change to a source `.blend` and its regenerated exports go in the same commit.**
+6. **A change to a source `.blend` and its regenerated exports go in the same commit.**
    - Don't commit re-exports without a `.blend` change. Exports are not byte-identical between runs, because Blender writes USD prims in a varying order and the `.dae` records the export time.
    - `tools/export_all.sh` re-exports every model. Before committing, use `git checkout` to restore the exports of models whose `.blend` didn't change.
-6. **Don't change the render scenes** (cameras, lights, world, render settings) unless that is the task.
-7. **Never overwrite files without a backup.**
+7. **Don't change the render scenes** (cameras, lights, world, render settings) unless that is the task.
+8. **Never overwrite files without a backup.**
    - Blender keeps the previous save as `*.blend1`, which git ignores.
    - Scratch output goes to `build/`, which git also ignores.
 

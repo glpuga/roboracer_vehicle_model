@@ -9,7 +9,9 @@ The vehicle is split into independently reusable parts:
 - **custom wheel-and-tyre models** with the general dimensions and characteristics of a Traxxas Slash wheel, in left (`_L`) and right (`_R`) versions;
 - a **center-of-mass marker**, represented by a separate checkerboard sphere whose placement can be parameterized.
 
-A linked **car assembly** places these parts together for rendering; it is not exported as a monolithic vehicle mesh. The exports are intended for use in downstream robot descriptions and simulators, including ROS 2 workflows. This repository does **not** contain a URDF, a ROS 2 package or a vehicle dynamics model. The center-of-mass sphere is a visual marker, not a mass or inertia specification.
+A linked **car assembly** places these parts together for rendering; it is not exported as a monolithic vehicle mesh. The exports are intended for use in downstream robot descriptions and simulators, including ROS 2 workflows. This repository does **not** contain a URDF or a vehicle dynamics model. The center-of-mass sphere is a visual marker, not a mass or inertia specification.
+
+The repository is also a data-only ROS 2 package (`ament_cmake`) that installs the Collada meshes, so a robot description can refer to them as `package://roboracer_vehicle_model/dae/<model>.dae`. See [ROS 2 package](#ros-2-package).
 
 All models use metres, with +Z up.
 
@@ -61,6 +63,7 @@ These are Blender renders of DAE's exported Lambert materials, not screenshots f
 | [`dae/`](dae/) | The same models as Collada (e.g. for URDF, RViz or Gazebo), exported from the `.usdc` files. **Never edit these by hand.** |
 | [`renders/`](renders/) | Native Blender and exported-DAE reference images. |
 | [`tools/`](tools/) | Python export and render scripts, the `export_all.sh` wrapper, and the Dockerfile in `tools/docker/`. |
+| `package.xml`, `CMakeLists.txt` | ROS 2 package manifest and build file. Data-only: installs `dae/` (plus the licence and this README) under `share/roboracer_vehicle_model/`. |
 | `build/` | Scratch output, such as test renders. Ignored by git. |
 
 ## Car assembly parameters
@@ -73,6 +76,23 @@ The root empty `Roboracer_Car` in `roboracer_car.blend` sits at the rear axle ce
 The drivers use simple expressions, so they work without enabling Python auto-run. Changing the wheelbase opens a gap, or an overlap, in the chassis plate at the cut. That is expected, and the URDF will behave the same way.
 
 **URDF migration:** the frame and front-axle exports no longer contain their bumpers. Add `roboracer_rear_bumper` and `roboracer_front_bumper` as separate meshes or fixed child links, using the offsets above with no rotation. Each has matching `.usdc` and `.dae` exports and a root named `Roboracer_Rear_Bumper` or `Roboracer_Front_Bumper`. Existing frame/front-axle origins and the assembled car geometry are unchanged.
+
+## ROS 2 package
+
+The repository root is a ROS 2 package named `roboracer_vehicle_model`. It has no compiled code: the build only copies the exported Collada meshes into the package share directory, keeping the `dae` folder name:
+
+```bash
+colcon build --packages-select roboracer_vehicle_model
+source install/setup.bash
+```
+
+Mesh URIs in a URDF are then:
+
+```xml
+<mesh filename="package://roboracer_vehicle_model/dae/roboracer_frame.dae"/>
+```
+
+Every `.dae` in `dae/` is installed, so regenerated or new exports need no packaging change, only a rebuild of this package. The USD exports are not packaged.
 
 ## Quick start
 

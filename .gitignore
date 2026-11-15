@@ -2,3 +2,7 @@
 *.blend[0-9]*
 build/
 __pycache__/
+
+# colcon output, when building the ROS 2 package from this folder
+install/
+log/
